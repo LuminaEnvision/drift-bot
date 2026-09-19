@@ -1,0 +1,39 @@
+---
+description: Drift Bot product scope and current build phase
+alwaysApply: true
+---
+
+# Drift Bot
+
+Telegram repo-monitoring agent. Users connect GitHub repos; Drift Bot runs cheap daily checks (dependency drift, CVEs, framework-relevant changes) and optional LLM deep research. Results go back as Telegram messages.
+
+## Current phase
+
+Skeleton plus billing in a pnpm + Turborepo monorepo: 30-day Paid trial on first `/start`, then monthly Telegram Stars subscriptions (`/tier`, `/upgrade`). Do not add the GitHub App, scheduler, or scanner implementations until asked.
+
+## Billing
+
+- New users get Paid limits for 30 days (`trial_ends_at`). After that they drop to Free unless a Stars subscription is active.
+- Checkout is Telegram Stars (`XTR`, 30-day `subscription_period`). Users can pay Stars from Telegram Wallet. Do not add Stripe or TON Connect unless asked.
+- Enforce free / paid / premium limits in the API against `usage_counters` and `resolveAccess`, not only in bot UX.
+- The API is the only process that talks to Postgres. The bot is stateless and resolves accounts from `telegram_user_id` via the API (`INTERNAL_API_SECRET`).
+
+## Layout
+
+`apps/bot`, `apps/api`, `apps/worker`; `packages/{db,types,github-client,stack-detector,registry-clients,audit-engine,llm-engine}`. `packages/db` stays **Prisma** (not Drizzle).
+
+## Planned GitHub checks (not wired yet)
+
+What we offer on a connected repo is `docs/audit-checklist.md` / `packages/audit-engine/src/catalog.ts`.
+
+MVP rollout: `/audit_secrets` (Gitleaks), `/audit_deps` (same as daily CVE digest), `/audit_code` (Semgrep), `/audit_contracts` (Slither, if `.sol` files). `/audit` (**Break before launch**) is the LLM wrap: 30+ issues, P0/P1/P2, fix every P0.
+
+Solana contract audit is a stub in `packages/audit-engine/src/contracts/solana/` (v2).
+
+## Planned deep research
+
+`/changelog`, `/migrate`, `/compat`, `/ask` — catalog in `packages/llm-engine/src/operations.ts`.
+
+## Stack
+
+Node.js, TypeScript, grammY, Fastify, Prisma, Postgres, pnpm, Turborepo.

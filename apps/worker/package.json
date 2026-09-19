@@ -1,0 +1,19 @@
+{
+  "name": "@drift-bot/worker",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "echo '@drift-bot/worker is a stub'",
+    "build": "tsc --noEmit -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "@drift-bot/audit-engine": "workspace:*",
+    "@drift-bot/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "drift-bot",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "turbo run dev --filter=@drift-bot/bot --filter=@drift-bot/api",
+    "dev:bot": "turbo run dev --filter=@drift-bot/bot",
+    "dev:api": "turbo run dev --filter=@drift-bot/api",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "migrate": "dotenv -e .env -- pnpm --filter @drift-bot/db migrate",
+    "generate": "pnpm --filter @drift-bot/db generate",
+    "postinstall": "pnpm --filter @drift-bot/db generate",
+    "db:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/docker/docker-compose.yml down"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^8.0.0",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
