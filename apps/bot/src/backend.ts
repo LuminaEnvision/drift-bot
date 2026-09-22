@@ -2,8 +2,12 @@ import type { AuditKind, AuditReport, BillingSnapshot, ConnectedRepo, Invoice, P
 
 export type { AuditKind, AuditReport, BillingSnapshot, ConnectedRepo, Invoice, PaidPlan };
 
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3000";
+const API_BASE_URL = (process.env.API_BASE_URL ?? "http://localhost:3000").trim().replace(/\/+$/, "");
 const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET;
+
+export function apiBaseUrl(): string {
+  return API_BASE_URL;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -20,14 +24,22 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error("INTERNAL_API_SECRET is required");
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${INTERNAL_API_SECRET}`,
-      ...init?.headers,
-    },
-  });
+  const url = `${API_BASE_URL}${path}`;
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      signal: AbortSignal.timeout(20_000),
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${INTERNAL_API_SECRET}`,
+        ...init?.headers,
+      },
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "network error";
+    throw new Error(`Couldn't reach the API at ${API_BASE_URL} (${reason}). Check API_BASE_URL on the bot service.`);
+  }
 
   const text = await response.text();
   if (!response.ok) {
@@ -113,6 +125,9 @@ export function runRepoAudit(telegramUserId: number, kind: AuditKind, repo?: str
 
 export function errorMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {
+    if (error.status === 401) {
+      return "The bot and API secrets do not match. INTERNAL_API_SECRET must be the same on both Railway services.";
+    }
     try {
       const parsed = JSON.parse(error.body) as { error?: string };
       if (parsed.error) {
@@ -121,6 +136,9 @@ export function errorMessage(error: unknown, fallback: string): string {
     } catch {
       // use fallback
     }
+  }
+  if (error instanceof Error && error.message.startsWith("Couldn't reach the API")) {
+    return error.message;
   }
   return fallback;
 }
