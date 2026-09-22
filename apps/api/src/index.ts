@@ -33,6 +33,6 @@ app.setErrorHandler((error, request, reply) => {
 });
 
 const port = Number(process.env.PORT ?? 3000);
-const host = process.env.HOST ?? "0.0.0.0";
+const host = (process.env.HOST ?? "0.0.0.0").trim().replace(/\.+$/, "") || "0.0.0.0";
 
 await app.listen({ port, host });

@@ -25,7 +25,11 @@ if [ -z "${DATABASE_URL:-}" ]; then
   exit 1
 fi
 
-export HOST="${HOST:-0.0.0.0}"
+HOST="$(printf '%s' "${HOST:-0.0.0.0}" | tr -d '[:space:]' | sed 's/\.*$//')"
+if [ -z "$HOST" ]; then
+  HOST="0.0.0.0"
+fi
+export HOST
 export PORT="${PORT:-8080}"
 echo "Starting API on ${HOST}:${PORT}"
 
