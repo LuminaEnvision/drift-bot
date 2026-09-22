@@ -1,77 +1,58 @@
 # Drift Bot
 
-Telegram bot that monitors GitHub repos for dependency drift, security advisories, and framework-relevant changes, plus on-demand GitHub audits (secrets, deps, Semgrep, Slither, **Break before launch**) and deep research. Free / paid / premium tiers gate repo count, digest frequency, and deep research.
+Official product repo. Not open source. Not a template.
 
-This repo is billing, public-repo audits, and the cheap digest: a `/start` trial, Telegram Stars checkout, `/connect owner/repo`, on-demand audits, `/digest`, and an hourly scheduler that messages you when CVEs or CI change. GitHub App (private repos) and LLM deep research are not wired yet.
+Use the bot on Telegram: **[@RepoDriftBot](https://t.me/RepoDriftBot)**
 
-## Stack
+Do not clone this to run your own instance. All rights reserved.
 
-- **Bot:** Node.js, TypeScript, [grammY](https://grammy.dev)
-- **API:** [Fastify](https://fastify.dev)
-- **DB:** Postgres 16 via Docker, [Prisma](https://www.prisma.io) for migrations and a typed client
+---
 
-Prisma vs `pg`: Prisma stays in `packages/db` (this reorg did **not** switch to Drizzle — that would be a schema/client rewrite). The API is the only process that talks to the database. The bot stays stateless and calls the API with `INTERNAL_API_SECRET`.
+Drift Bot watches the public GitHub repos you connect. It checks known CVEs and GitHub Actions on a schedule, and it can run a full pre-launch audit when you ask. Results come back in Telegram. The full audit also sends a PDF and a markdown file you can paste into Cursor.
 
-pnpm workspaces + Turborepo orchestrate `apps/*` and `packages/*`.
+## What it does
 
-## Billing
+**Watch**
+- `/connect owner/repo` or paste a github.com link
+- Remembers the repo. `/repos` lists it. `/disconnect` drops it
+- Public GitHub repos only
 
-New users get **30 days of Paid** on first `/start` (5 repos, daily digest, 5 deep research runs / month). When the trial ends they drop to Free unless they subscribe.
+**Automatic digest**
+- Cheap pass: known CVEs plus CI on the default branch
+- Messages you when something changes. Stays quiet if nothing did
+- `/digest` runs that check now
+- Daily on trial, Paid, and Premium. Weekly on Free
 
-Checkout is **Telegram Stars**, not a separate crypto flow. Stars is the native in-chat invoice; Telegram Wallet can hold or buy Stars and pay the invoice. Recurring period is 30 days (the only period Telegram allows). TON Connect / raw Telegram Wallet crypto can wait.
+**On-demand audits**
+- `/audit_secrets` leaked keys
+- `/audit_deps` known CVEs
+- `/audit_code` risky patterns
+- `/audit_contracts` Solidity footguns (if there are `.sol` files)
+- `/audit` Break before launch: all of the above. Fix every P0. This one sends a PDF and a `.md`
 
-| | Free | Paid (trial + 150 ⭐ / 30 days) | Premium (500 ⭐ / 30 days) |
+**Account**
+- `/start` 30-day Paid trial. No card
+- `/tier` your plan
+- `/upgrade` subscribe with Telegram Stars. Telegram Wallet works
+- `/help` the list
+
+## Plans
+
+| | Free | Paid (150 Stars / 30 days) | Premium (500 Stars / 30 days) |
 |---|---|---|---|
 | Repos | 1 | 5 | unlimited |
-| Digest | weekly | daily | daily, priority |
-| Deep research | — | 5 / month | unlimited (soft limit) |
+| Digest | weekly | daily | daily, first in line |
+| Audits | yes | yes | yes |
 
-Prices are `PAID_STARS_MONTHLY` and `PREMIUM_STARS_MONTHLY` in `.env`.
+After the trial you drop to Free unless you subscribe. Free does not expire.
 
-## Deploy (not localhost)
+## Not in yet
 
-The bot only answers when an API + bot process are running. For phones when this laptop is off, host Postgres, the API, and the bot. Playbook: [docs/deploy.md](docs/deploy.md)
+- Private repos
+- Deep research (`/ask`, `/changelog`, `/migrate`, `/compat`)
 
-## Local loop
+## License
 
-Full copy-paste playbook: [docs/local-loop.md](docs/local-loop.md)
+Copyright (c) 2026 Lumina Envision. All rights reserved.
 
-```bash
-cd "/Users/luminaenvision/Drift Bot"
-cp .env.example .env          # skip if .env already exists
-# paste TELEGRAM_BOT_TOKEN from @BotFather into .env
-pnpm install
-pnpm db:up
-pnpm migrate
-```
-
-Then two terminals:
-
-```bash
-pnpm dev:api               # curl http://localhost:3000/health → {"status":"ok"}
-pnpm dev:bot               # Telegram /start → 30-day Paid trial
-```
-
-Docker Desktop must be running. Leave `GITHUB_APP_*` and `ANTHROPIC_API_KEY` empty until the GitHub App step.
-
-If `/newbot` is blocked on your Telegram account, send [docs/partner-botfather.md](docs/partner-botfather.md) to a partner. They create the bot; you paste the token into `.env`.
-
-## Layout
-
-| Path | Role |
-|---|---|
-| `apps/bot` | grammY: billing, `/connect`, `/repos`, `/digest`, MVP audits, hourly digest tick |
-| `apps/api` | Fastify: health, users, Stars billing, public repo connect, audit, digest |
-| `apps/worker` | Queue/job stubs (audits and digest run in the API today) |
-| `packages/db` | Prisma schema + migrations |
-| `packages/types` | Shared TS types |
-| `packages/audit-engine` | Check catalog + secrets / deps / code / contracts scanners |
-| `packages/stack-detector` | Manifest fingerprinting |
-| `packages/llm-engine` | Deep-research catalog |
-| `infra/docker` | Local Postgres Compose file |
-
-## What's next
-
-1. GitHub App install/OAuth for private repos
-2. Swap in Gitleaks / Semgrep / Slither when those CLIs are in the worker image
-3. LLM wrap for `/audit` and deep research (`/changelog`, `/migrate`, `/compat`, `/ask`)
+This software is the proprietary product Drift Bot. You may not copy, modify, distribute, or run your own instance without written permission. Use the product through the official Telegram bot.
