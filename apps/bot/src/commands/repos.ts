@@ -108,7 +108,12 @@ function auditKeyboard(fullName: string, single: boolean) {
   if (kinds.some((kind) => `audit:${kind}:${fullName}`.length > 64)) {
     return undefined;
   }
+  if (`digest:${fullName}`.length > 64) {
+    return undefined;
+  }
   return new InlineKeyboard()
+    .text("Digest now", `digest:${fullName}`)
+    .row()
     .text("Secrets", `audit:secrets:${fullName}`)
     .text("Deps", `audit:deps:${fullName}`)
     .row()

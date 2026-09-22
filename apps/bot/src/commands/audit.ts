@@ -1,4 +1,4 @@
-import { Bot, type Context } from "grammy";
+import { Bot, InputFile, type Context } from "grammy";
 import {
   errorMessage,
   runRepoAudit,
@@ -6,6 +6,8 @@ import {
   type AuditKind,
 } from "../backend.js";
 import { chunkTelegram, formatAuditReport } from "../formatters/audit.js";
+import { promptToPdf } from "../formatters/pdf.js";
+import { formatAgentPrompt } from "../formatters/prompt.js";
 
 function requireFrom(ctx: { from?: { id: number; username?: string } }) {
   if (!ctx.from) {
@@ -21,6 +23,23 @@ async function runAndReply(ctx: Context, kind: AuditKind, repo?: string) {
   const { report } = await runRepoAudit(from.id, kind, repo);
   for (const chunk of chunkTelegram(formatAuditReport(report))) {
     await ctx.reply(chunk);
+  }
+
+  const prompt = formatAgentPrompt(report);
+  const slug = report.repo.replaceAll("/", "-").replaceAll(/[^A-Za-z0-9._-]/g, "_");
+  const base = `drift-${slug}-${report.kind}`;
+  const pdf = await promptToPdf(prompt);
+
+  try {
+    await ctx.replyWithDocument(new InputFile(pdf, `${base}.pdf`), {
+      caption: "Download the PDF. Every finding, file link, why it matters, and what to do. Copy-paste ready.",
+    });
+    await ctx.replyWithDocument(new InputFile(Buffer.from(prompt, "utf8"), `${base}.md`), {
+      caption: "Same report as markdown. Select all, copy, paste into Cursor.",
+    });
+  } catch (error) {
+    console.error(error);
+    await ctx.reply("I have the full report, but Telegram would not take the file. Try /audit again in a second.");
   }
 }
 

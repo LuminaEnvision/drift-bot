@@ -1,4 +1,6 @@
-/** Cheap scheduled dependency/advisory check — not wired. */
-export async function runDailyCheck(_repoId: string): Promise<void> {
-  throw new Error("daily_check job is not wired yet");
-}
+/**
+ * Cheap scheduled CVE + CI check. The API runs this in-process via
+ * POST /v1/digest/tick. The bot calls that on an hourly timer and sends
+ * Telegram messages. Same job can move here when a queue is wired.
+ */
+export { runAudit } from "@drift-bot/audit-engine";

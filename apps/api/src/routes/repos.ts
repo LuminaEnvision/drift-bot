@@ -3,7 +3,7 @@ import { prisma } from "@drift-bot/db";
 import { runAudit } from "@drift-bot/audit-engine";
 import { GithubRepoError, fetchPublicRepo, parseRepoRef, withClonedRepo } from "@drift-bot/github-client";
 import type { AuditKind, AuditReport, ConnectedRepo, StackKind } from "@drift-bot/types";
-import { canConnectRepo, resolveAccess, toBillingSnapshot } from "./billing/entitlements.js";
+import { canConnectRepo, resolveAccess, TIER_LIMITS, toBillingSnapshot } from "./billing/entitlements.js";
 import { HttpError, parseTelegramUserId } from "../http.js";
 
 type TelegramUserBody = {
@@ -45,14 +45,18 @@ async function loadUser(telegramUserId: bigint) {
   return user;
 }
 
-function toConnectedRepo(repo: {
-  id: string;
-  fullName: string;
-  defaultBranch: string;
-  source: string;
-  isActive: boolean;
-  stackFingerprint: unknown;
-}): ConnectedRepo {
+function toConnectedRepo(
+  repo: {
+    id: string;
+    fullName: string;
+    defaultBranch: string;
+    source: string;
+    isActive: boolean;
+    stackFingerprint: unknown;
+    dailyRuns?: Array<{ ranAt: Date }>;
+  },
+  cadence: "daily" | "weekly",
+): ConnectedRepo {
   return {
     id: repo.id,
     full_name: repo.fullName,
@@ -60,6 +64,8 @@ function toConnectedRepo(repo: {
     source: repo.source === "github_app" ? "github_app" : "public",
     stacks: stacksFromFingerprint(repo.stackFingerprint),
     is_active: repo.isActive,
+    check_frequency: cadence,
+    last_checked_at: repo.dailyRuns?.[0]?.ranAt.toISOString() ?? null,
   };
 }
 
@@ -81,11 +87,13 @@ export async function registerRepoRoutes(app: FastifyInstance) {
   app.get<{ Params: { telegramUserId: string } }>("/users/:telegramUserId/repos", async (request) => {
     const telegramUserId = parseTelegramUserId(request.params.telegramUserId);
     const user = await loadUser(telegramUserId);
+    const cadence = TIER_LIMITS[resolveAccess(user).tier].digest;
     const repos = await prisma.repo.findMany({
       where: { userId: user.id, isActive: true },
+      include: { dailyRuns: { orderBy: { ranAt: "desc" }, take: 1 } },
       orderBy: { createdAt: "asc" },
     });
-    return { repos: repos.map(toConnectedRepo) };
+    return { repos: repos.map((repo) => toConnectedRepo(repo, cadence)) };
   });
 
   app.post<{ Body: RepoBody }>("/repos/connect", async (request) => {
@@ -142,7 +150,7 @@ export async function registerRepoRoutes(app: FastifyInstance) {
       },
     });
 
-    return { repo: toConnectedRepo(repo) };
+    return { repo: toConnectedRepo(repo, TIER_LIMITS[access.tier].digest) };
   });
 
   app.post<{ Body: RepoBody }>("/repos/disconnect", async (request) => {
@@ -163,7 +171,7 @@ export async function registerRepoRoutes(app: FastifyInstance) {
       where: { id: repo.id },
       data: { isActive: false },
     });
-    return { ok: true, repo: toConnectedRepo({ ...repo, isActive: false }) };
+    return { ok: true, repo: toConnectedRepo({ ...repo, isActive: false }, TIER_LIMITS[resolveAccess(user).tier].digest) };
   });
 
   app.post<{ Body: AuditBody }>("/repos/audit", async (request) => {

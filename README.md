@@ -2,7 +2,7 @@
 
 Telegram bot that monitors GitHub repos for dependency drift, security advisories, and framework-relevant changes, plus on-demand GitHub audits (secrets, deps, Semgrep, Slither, **Break before launch**) and deep research. Free / paid / premium tiers gate repo count, digest frequency, and deep research.
 
-This repo is billing plus public-repo audits: a `/start` trial, Telegram Stars checkout, `/connect owner/repo`, and the MVP audit commands. GitHub App (private repos), the daily scheduler, and LLM deep research are not wired yet.
+This repo is billing, public-repo audits, and the cheap digest: a `/start` trial, Telegram Stars checkout, `/connect owner/repo`, on-demand audits, `/digest`, and an hourly scheduler that messages you when CVEs or CI change. GitHub App (private repos) and LLM deep research are not wired yet.
 
 ## Stack
 
@@ -60,9 +60,9 @@ If `/newbot` is blocked on your Telegram account, send [docs/partner-botfather.m
 
 | Path | Role |
 |---|---|
-| `apps/bot` | grammY: billing, `/connect`, `/repos`, MVP audits |
-| `apps/api` | Fastify: health, users, Stars billing, public repo connect + audit |
-| `apps/worker` | Queue/job stubs (audits run in the API today) |
+| `apps/bot` | grammY: billing, `/connect`, `/repos`, `/digest`, MVP audits, hourly digest tick |
+| `apps/api` | Fastify: health, users, Stars billing, public repo connect, audit, digest |
+| `apps/worker` | Queue/job stubs (audits and digest run in the API today) |
 | `packages/db` | Prisma schema + migrations |
 | `packages/types` | Shared TS types |
 | `packages/audit-engine` | Check catalog + secrets / deps / code / contracts scanners |
@@ -73,6 +73,5 @@ If `/newbot` is blocked on your Telegram account, send [docs/partner-botfather.m
 ## What's next
 
 1. GitHub App install/OAuth for private repos
-2. Daily minimum check (scheduler + digest)
-3. Swap in Gitleaks / Semgrep / Slither when those CLIs are in the worker image
-4. LLM wrap for `/audit` and deep research (`/changelog`, `/migrate`, `/compat`, `/ask`)
+2. Swap in Gitleaks / Semgrep / Slither when those CLIs are in the worker image
+3. LLM wrap for `/audit` and deep research (`/changelog`, `/migrate`, `/compat`, `/ask`)

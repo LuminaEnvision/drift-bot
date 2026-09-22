@@ -1,0 +1,143 @@
+import type { AuditFinding, AuditReport } from "@drift-bot/types";
+
+const KIND_LABEL: Record<AuditReport["kind"], string> = {
+  secrets: "secrets (leaked keys)",
+  deps: "dependencies (known CVEs)",
+  code: "code (risky patterns)",
+  contracts: "contracts (Solidity footguns)",
+  full: "Break before launch (full pass)",
+};
+
+const ORDER: AuditFinding["severity"][] = ["P0", "P1", "P2", "info"];
+
+export function formatAgentPrompt(report: AuditReport): string {
+  const date = new Date().toISOString().slice(0, 10);
+  const groups = groupBySeverity(report.findings);
+  const p0 = groups.P0.length;
+  const notes = report.results.map((result) => result.message).filter(Boolean);
+
+  const findingBlocks = ORDER.flatMap((severity) => {
+    const items = groups[severity];
+    if (items.length === 0) {
+      return [];
+    }
+    const heading =
+      severity === "info"
+        ? `## Info (${items.length})`
+        : `## ${severity} (${items.length})  ${severity === "P0" ? "fix every one of these before you ship" : ""}`.trim();
+    const body = items
+      .map((finding, index) => formatFindingBlock(index + 1, finding, report.repo))
+      .join("\n\n");
+    return [`${heading}\n\n${body}`];
+  });
+
+  const findingsSection =
+    report.findings.length === 0
+      ? "## Findings\n\nNo findings from this pass. Still do a human pass on auth, payments, and anything that can lose user data."
+      : findingBlocks.join("\n\n");
+
+  const scannerNotes =
+    notes.length > 0 ? `## Scanner notes\n\n${notes.map((note) => `- ${note}`).join("\n")}\n` : "";
+
+  return `Drift Bot audit report
+Repo: ${report.repo}
+Check: ${KIND_LABEL[report.kind]}
+Date: ${date}
+Findings: ${report.findings.length} total, ${p0} P0
+
+You are a senior engineer working in the GitHub repo ${report.repo}.
+Treat it as Break before launch. Find real bugs, patch them in the repo, and do not write a slide deck.
+
+Rules:
+- Fix every P0 before you stop. There ${p0 === 1 ? "is" : "are"} ${p0} P0 item${p0 === 1 ? "" : "s"} below.
+- Then fix P1. Then P2. Info is optional.
+- Open each file and confirm the finding is real before you change it.
+- If a finding is a false positive, say so in one line and skip it.
+- Prefer a small, safe patch over a rewrite.
+- After each P0, say the file you changed and what you did.
+- Do not print secrets. Rotate anything that looks like a live key and remove it from git.
+
+${scannerNotes}${findingsSection}
+
+## How to work
+1. Open the repo ${report.repo} (clone if you do not have it locally).
+2. Work through P0 top to bottom.
+3. Run the tests or the closest check this stack has.
+4. Reply with: what you fixed, what you skipped, and what is still risky.
+
+Copy everything above this line into Cursor (or your agent) and run it against ${report.repo}.
+`;
+}
+
+function groupBySeverity(findings: AuditFinding[]): Record<AuditFinding["severity"], AuditFinding[]> {
+  const groups: Record<AuditFinding["severity"], AuditFinding[]> = {
+    P0: [],
+    P1: [],
+    P2: [],
+    info: [],
+  };
+  for (const finding of findings) {
+    groups[finding.severity].push(finding);
+  }
+  return groups;
+}
+
+function formatFindingBlock(index: number, finding: AuditFinding, repo: string): string {
+  const where = finding.file
+    ? `${finding.file}${finding.line ? `:${finding.line}` : ""}`
+    : "location unknown";
+  const link = finding.file
+    ? `https://github.com/${repo}/blob/HEAD/${finding.file.replace(/^\/+/, "")}${finding.line ? `#L${finding.line}` : ""}`
+    : "no file link";
+  const extra = extraForFinding(finding);
+  return `${index}. [${finding.tool} / ${finding.severity}] ${finding.message}
+   File: ${where}
+   Open: ${link}
+   Why: ${extra.why}
+   Do: ${extra.task}
+   Check: ${extra.check}`;
+}
+
+function extraForFinding(finding: AuditFinding): { why: string; task: string; check: string } {
+  if (finding.tool === "secrets") {
+    return {
+      why: "Looks like a credential or secret-looking assignment in git. If it is real, anyone with the repo can use it.",
+      task:
+        finding.severity === "P0"
+          ? "Open the file. If the value is real, rotate it now, remove it from the file, and treat the old value as burned. Do not print the secret."
+          : "Open the file. If it is a real secret, rotate it and move it to env. If it is a placeholder or example, say false positive and skip.",
+      check: "Search the repo for the same key name. Make sure it is not still in git history or another file.",
+    };
+  }
+  if (finding.tool === "deps") {
+    return {
+      why: "A known advisory matches a package version this repo pins or resolves.",
+      task: "Open the advisory. If this package is actually used, bump to a fixed version or drop it. Do not leave a vulnerable pin.",
+      check: "Re-run the install and tests after the bump. Confirm the advisory no longer matches.",
+    };
+  }
+  if (finding.tool === "code") {
+    return {
+      why: "This pattern is a common way to get RCE, XSS, or a data leak.",
+      task: "Read the surrounding code. If user input can reach it, patch it. If it is dead or safe, say why and skip.",
+      check: "Add or run the closest test. Grep for the same pattern in nearby files.",
+    };
+  }
+  if (finding.tool === "contracts" || finding.tool === "evm" || finding.tool === "solana") {
+    return {
+      why: "This Solidity pattern is a known footgun (auth bypass, unexpected value move, or weak randomness).",
+      task: "Read the function. If the pattern is reachable, patch it. If it is intentional, write one line saying why.",
+      check: "Re-read the call path from an untrusted caller. Do not ship with an open P0.",
+    };
+  }
+  return {
+    why: "The scanner flagged this as risky.",
+    task:
+      finding.severity === "P0"
+        ? "Confirm it, fix it, and do not leave a TODO."
+        : finding.severity === "info"
+          ? "Read it. Fix it only if it is cheap and real."
+          : "Confirm it and patch it if it is real.",
+    check: "Say the file you changed and what you did.",
+  };
+}

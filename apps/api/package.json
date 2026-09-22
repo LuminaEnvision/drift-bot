@@ -7,7 +7,7 @@
     "start": "tsx src/index.ts",
     "build": "tsc --noEmit -p tsconfig.json",
     "lint": "tsc --noEmit -p tsconfig.json",
-    "test": "tsx --test src/routes/billing/entitlements.test.ts"
+    "test": "tsx --test src/routes/billing/entitlements.test.ts src/routes/digest/logic.test.ts"
   },
   "dependencies": {
     "@drift-bot/audit-engine": "workspace:*",

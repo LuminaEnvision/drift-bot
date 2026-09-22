@@ -38,7 +38,7 @@ export function formatBilling(billing: BillingSnapshot): string {
 export function welcomeText(billing: BillingSnapshot): string {
   return `Hey. I'm Drift Bot.
 
-I watch the GitHub repos you connect. If a dependency goes stale, a CVE shows up, or something in your stack looks like it might bite you, I message you here.
+I watch the GitHub repos you connect. Cheap CVE and CI check on a schedule. Paid and the trial get that every day. Free gets it once a week. I message you here when something changes.
 
 ${formatBilling(billing)}
 
@@ -56,11 +56,14 @@ export const HELP = `Here's what I can do right now:
 /connect owner/repo  watch a public GitHub repo
 /repos  what I'm watching
 /disconnect owner/repo  stop watching
+/digest  cheap CVE + CI check now
 /audit_secrets  leaked keys
 /audit_deps  known CVEs
 /audit_code  risky patterns
 /audit_contracts  Solidity footguns
 /audit  all of it, break before launch
+Audits come back as a short chat summary plus a PDF and a .md you can paste into Cursor.
+I also run the cheap digest on my own. Daily on Paid and Premium, weekly on Free.
 /tier  see your plan
 /upgrade  subscribe with Stars
 /help  this list

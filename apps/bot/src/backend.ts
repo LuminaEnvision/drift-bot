@@ -1,6 +1,14 @@
-import type { AuditKind, AuditReport, BillingSnapshot, ConnectedRepo, Invoice, PaidPlan } from "@drift-bot/types";
+import type {
+  AuditKind,
+  AuditReport,
+  BillingSnapshot,
+  ConnectedRepo,
+  DigestReport,
+  Invoice,
+  PaidPlan,
+} from "@drift-bot/types";
 
-export type { AuditKind, AuditReport, BillingSnapshot, ConnectedRepo, Invoice, PaidPlan };
+export type { AuditKind, AuditReport, BillingSnapshot, ConnectedRepo, DigestReport, Invoice, PaidPlan };
 
 const API_BASE_URL = (process.env.API_BASE_URL ?? "http://localhost:3000").trim().replace(/\/+$/, "");
 const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET;
@@ -19,7 +27,7 @@ export class ApiError extends Error {
   }
 }
 
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
+async function api<T>(path: string, init?: RequestInit, timeoutMs = 20_000): Promise<T> {
   if (!INTERNAL_API_SECRET) {
     throw new Error("INTERNAL_API_SECRET is required");
   }
@@ -29,7 +37,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(url, {
       ...init,
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(timeoutMs),
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${INTERNAL_API_SECRET}`,
@@ -116,11 +124,34 @@ export function disconnectRepo(telegramUserId: number, repo: string) {
   });
 }
 
+export function runRepoDigest(telegramUserId: number, repo?: string) {
+  return api<{ reports: DigestReport[] }>(
+    "/v1/digest/run",
+    {
+      method: "POST",
+      body: JSON.stringify({ telegram_user_id: telegramUserId, repo }),
+    },
+    180_000,
+  );
+}
+
+export function tickDigest() {
+  return api<{ deliveries: Array<{ telegram_user_id: number; report: DigestReport }>; checked: number }>(
+    "/v1/digest/tick",
+    { method: "POST" },
+    180_000,
+  );
+}
+
 export function runRepoAudit(telegramUserId: number, kind: AuditKind, repo?: string) {
-  return api<{ report: AuditReport }>("/v1/repos/audit", {
-    method: "POST",
-    body: JSON.stringify({ telegram_user_id: telegramUserId, kind, repo }),
-  });
+  return api<{ report: AuditReport }>(
+    "/v1/repos/audit",
+    {
+      method: "POST",
+      body: JSON.stringify({ telegram_user_id: telegramUserId, kind, repo }),
+    },
+    180_000,
+  );
 }
 
 export function errorMessage(error: unknown, fallback: string): string {

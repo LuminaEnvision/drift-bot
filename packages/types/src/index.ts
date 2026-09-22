@@ -65,6 +65,28 @@ export type ConnectedRepo = {
   source: "public" | "github_app";
   stacks: StackKind[];
   is_active: boolean;
+  check_frequency: "daily" | "weekly";
+  last_checked_at: string | null;
+};
+
+export type DigestCi = {
+  ok: boolean;
+  conclusion?: string;
+  url?: string;
+  message: string;
+};
+
+export type DigestReport = {
+  repo: string;
+  cadence: "daily" | "weekly";
+  forced: boolean;
+  notified: boolean;
+  last_checked_at: string | null;
+  ci: DigestCi;
+  findings: AuditFinding[];
+  new_findings: AuditFinding[];
+  resolved_findings: AuditFinding[];
+  notes: string[];
 };
 
 export type AuditReport = {

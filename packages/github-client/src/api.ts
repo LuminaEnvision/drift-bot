@@ -8,6 +8,13 @@ export type PublicRepo = {
   stacks: Stack[];
 };
 
+export type CiStatus = {
+  ok: boolean;
+  conclusion?: string;
+  url?: string;
+  message: string;
+};
+
 function githubHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
@@ -101,4 +108,45 @@ async function listContents(fullName: string, path = ""): Promise<GithubContentJ
   }
   const body = (await response.json()) as GithubContentJson[] | { message?: string };
   return Array.isArray(body) ? body : [];
+}
+
+export async function fetchCiStatus(fullName: string, branch: string): Promise<CiStatus> {
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${fullName}/actions/runs?branch=${encodeURIComponent(branch)}&per_page=1`,
+      { headers: githubHeaders() },
+    );
+    if (!response.ok) {
+      return { ok: true, message: `Couldn't read CI on ${branch}. GitHub didn't answer.` };
+    }
+    const body = (await response.json()) as {
+      workflow_runs?: Array<{
+        conclusion: string | null;
+        html_url: string;
+        status: string;
+      }>;
+    };
+    const run = body.workflow_runs?.[0];
+    if (!run) {
+      return { ok: true, message: `No GitHub Actions runs on ${branch} that I can see.` };
+    }
+    if (run.status !== "completed") {
+      return {
+        ok: true,
+        conclusion: run.status,
+        url: run.html_url,
+        message: `CI is still ${run.status} on ${branch}.`,
+      };
+    }
+    const ok =
+      run.conclusion === "success" || run.conclusion === "skipped" || run.conclusion === "neutral";
+    return {
+      ok,
+      conclusion: run.conclusion ?? undefined,
+      url: run.html_url,
+      message: ok ? `CI passed on ${branch}.` : `CI ${run.conclusion} on ${branch}.`,
+    };
+  } catch {
+    return { ok: true, message: `Couldn't read CI on ${branch}.` };
+  }
 }

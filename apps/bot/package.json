@@ -7,12 +7,13 @@
     "start": "tsx src/index.ts",
     "build": "tsc --noEmit -p tsconfig.json",
     "lint": "tsc --noEmit -p tsconfig.json",
-    "test": "node -e \"process.exit(0)\""
+    "test": "tsx --test src/formatters/prompt.test.ts src/formatters/digest.test.ts"
   },
   "dependencies": {
     "@drift-bot/github-client": "workspace:*",
     "@drift-bot/types": "workspace:*",
     "grammy": "^1.38.2",
+    "pdf-lib": "^1.17.1",
     "tsx": "^4.20.5"
   },
   "devDependencies": {
