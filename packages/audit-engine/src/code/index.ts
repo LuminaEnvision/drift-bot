@@ -9,13 +9,19 @@ type CodeRule = {
 
 const RULES: CodeRule[] = [
   { severity: "P1", message: "eval() or new Function()", pattern: /\beval\s*\(|new Function\s*\(/ },
-  { severity: "P1", message: "innerHTML or document.write", pattern: /\.innerHTML\s*=|document\.write\s*\(/ },
+  { severity: "P1", message: "innerHTML assignment", pattern: /\.innerHTML\s*=/ },
+  { severity: "P1", message: "document.write", pattern: /document\.write\s*\(/ },
   { severity: "P1", message: "dangerouslySetInnerHTML", pattern: /dangerouslySetInnerHTML/ },
   { severity: "P1", message: "child_process exec with a template string", pattern: /(?:exec|execSync|execFileSync)\(\s*`/ },
   { severity: "P1", message: "pickle.loads", pattern: /pickle\.loads\s*\(/ },
   { severity: "P1", message: "yaml.load without a SafeLoader", pattern: /yaml\.load\s*\(/ },
   { severity: "P1", message: "TLS verification turned off", pattern: /NODE_TLS_REJECT_UNAUTHORIZED|verify\s*=\s*False/ },
-  { severity: "P2", message: "SQL string built with concatenation or a template", pattern: /(?:SELECT|INSERT|UPDATE|DELETE)\s+[^;]*['"`]\s*\+|`(?:SELECT|INSERT|UPDATE|DELETE)/i },
+  {
+    severity: "P2",
+    message: "SQL string built with concatenation or a template",
+    pattern:
+      /(?:\bSELECT\b|\bINSERT\s+INTO\b|\bUPDATE\s+[A-Za-z_][A-Za-z0-9_]*\s+SET\b|\bDELETE\s+FROM\b)[^;]{0,120}(?:['"`]\s*\+|\+|`)/i,
+  },
 ];
 
 const CODE_EXTS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".py", ".go", ".rs", ".rb", ".php", ".java"]);
@@ -29,10 +35,14 @@ export function scanTextForCodeIssues(content: string, file: string): AuditFindi
     }
     for (const rule of RULES) {
       if (rule.pattern.test(line)) {
+        const jsonLd =
+          rule.message === "dangerouslySetInnerHTML" && /JSON\.stringify/.test(content);
         findings.push({
-          severity: rule.severity,
+          severity: jsonLd ? "info" : rule.severity,
           tool: "code",
-          message: rule.message,
+          message: jsonLd
+            ? "dangerouslySetInnerHTML next to JSON.stringify. Often JSON-LD. Skip if no user input."
+            : rule.message,
           file,
           line: index + 1,
         });

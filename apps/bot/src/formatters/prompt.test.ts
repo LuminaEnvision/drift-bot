@@ -24,6 +24,8 @@ describe("formatAgentPrompt", () => {
     assert.match(prompt, /src\/auth.ts:12/);
     assert.match(prompt, /github.com\/acme\/vault\/blob\/HEAD\/src\/auth.ts#L12/);
     assert.match(prompt, /Why:/);
+    assert.match(prompt, /Finding count is not patch count/);
+    assert.match(prompt, /Fix now, Skip/);
     assert.match(prompt, /Copy everything above/);
   });
 });

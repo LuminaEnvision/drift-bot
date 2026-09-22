@@ -49,13 +49,16 @@ You are a senior engineer working in the GitHub repo ${report.repo}.
 Treat it as Break before launch. Find real bugs, patch them in the repo, and do not write a slide deck.
 
 Rules:
+- Finding count is not patch count. A deps line is one version bump even if it lists many advisory IDs.
 - Fix every P0 before you stop. There ${p0 === 1 ? "is" : "are"} ${p0} P0 item${p0 === 1 ? "" : "s"} below.
-- Then fix P1. Then P2. Info is optional.
+- Then fix real P1s. Then P2. Info is optional.
 - Open each file and confirm the finding is real before you change it.
 - If a finding is a false positive, say so in one line and skip it.
 - Prefer a small, safe patch over a rewrite.
+- Do not open one PR per CVE ID. Do not redeploy Solidity just to silence .call{value} or block.timestamp.
 - After each P0, say the file you changed and what you did.
 - Do not print secrets. Rotate anything that looks like a live key and remove it from git.
+- Reply in three buckets: Fix now, Skip (why), Later.
 
 ${scannerNotes}${findingsSection}
 
@@ -111,23 +114,23 @@ function extraForFinding(finding: AuditFinding): { why: string; task: string; ch
   }
   if (finding.tool === "deps") {
     return {
-      why: "A known advisory matches a package version this repo pins or resolves.",
-      task: "Open the advisory. If this package is actually used, bump to a fixed version or drop it. Do not leave a vulnerable pin.",
-      check: "Re-run the install and tests after the bump. Confirm the advisory no longer matches.",
+      why: "Known advisories match this package version. Many IDs still mean one bump.",
+      task: "Bump that package once (or drop it). Do not open a PR per advisory. Stay on the same major unless the note says you must migrate.",
+      check: "Re-run install and tests. Then smoke the main user paths.",
     };
   }
   if (finding.tool === "code") {
     return {
-      why: "This pattern is a common way to get RCE, XSS, or a data leak.",
-      task: "Read the surrounding code. If user input can reach it, patch it. If it is dead or safe, say why and skip.",
-      check: "Add or run the closest test. Grep for the same pattern in nearby files.",
+      why: "This pattern can be RCE, XSS, or a data leak. It is also a common false positive on static JSON-LD and UI copy.",
+      task: "Read the surrounding code. Patch only if user input can reach it. Skip JSON-LD, escaped print HTML, and strings that are not SQL.",
+      check: "Say skip or show the small patch. Do not rewrite the file.",
     };
   }
   if (finding.tool === "contracts" || finding.tool === "evm" || finding.tool === "solana") {
     return {
-      why: "This Solidity pattern is a known footgun (auth bypass, unexpected value move, or weak randomness).",
-      task: "Read the function. If the pattern is reachable, patch it. If it is intentional, write one line saying why.",
-      check: "Re-read the call path from an untrusted caller. Do not ship with an open P0.",
+      why: "Classic Solidity footgun. tx.origin and selfdestruct are usually real. .call{value} and block.timestamp are often intentional.",
+      task: "Confirm the call path. If it is a fee payout or an expiry window, skip and say so. Do not redeploy just for the scanner.",
+      check: "Only patch if an untrusted caller can abuse it, and you already planned a deploy.",
     };
   }
   return {

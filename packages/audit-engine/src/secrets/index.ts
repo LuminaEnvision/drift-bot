@@ -57,20 +57,65 @@ export function scanTextForSecrets(content: string, file: string): AuditFinding[
   const findings: AuditFinding[] = [];
   for (const rule of RULES) {
     rule.pattern.lastIndex = 0;
-    const match = rule.pattern.exec(content);
-    if (!match) {
-      continue;
+    let match: RegExpExecArray | null;
+    while ((match = rule.pattern.exec(content))) {
+      const lineNumber = content.slice(0, match.index).split("\n").length;
+      const line = content.split("\n")[lineNumber - 1] ?? "";
+      if (isCommentLine(line)) {
+        continue;
+      }
+      if (rule.id === "generic_secret" && isPlaceholderSecret(match[0], line)) {
+        continue;
+      }
+      findings.push({
+        severity: rule.severity,
+        tool: "secrets",
+        message: rule.message,
+        file,
+        line: lineNumber,
+      });
+      break;
     }
-    const line = content.slice(0, match.index).split("\n").length;
-    findings.push({
-      severity: rule.severity,
-      tool: "secrets",
-      message: rule.message,
-      file,
-      line,
-    });
   }
   return findings;
+}
+
+function isCommentLine(line: string): boolean {
+  const trimmed = line.trimStart();
+  return (
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("*") ||
+    trimmed.startsWith("<!--")
+  );
+}
+
+function isPlaceholderSecret(match: string, line: string): boolean {
+  const quoted = match.match(/['"]([^'"]{12,})['"]/);
+  const value = quoted?.[1] ?? "";
+  const haystack = `${value} ${line}`;
+  if (/env\([A-Za-z0-9_]+\)/i.test(haystack)) {
+    return true;
+  }
+  if (/process\.env|getenv\s*\(|os\.environ/.test(haystack)) {
+    return true;
+  }
+  if (/\$\{?[A-Za-z_][A-Za-z0-9_]*\}?/.test(value) && value.length < 80) {
+    return true;
+  }
+  if (/^0x[a-fA-F0-9]{40}$/.test(value)) {
+    return true;
+  }
+  if (/\.env(?:\.[A-Za-z0-9_-]+)?/.test(haystack)) {
+    return true;
+  }
+  if (/(placeholder|changeme|your[-_]|example|dummy|todo|xxx+|redacted|insert[-_ ]key)/i.test(haystack)) {
+    return true;
+  }
+  if (/^[A-Z][A-Z0-9_]{8,}$/.test(value)) {
+    return true;
+  }
+  return false;
 }
 
 export async function runSecretsAudit(repoPath: string): Promise<AuditResult> {
