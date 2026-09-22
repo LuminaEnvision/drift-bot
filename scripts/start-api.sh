@@ -1,9 +1,27 @@
 #!/bin/sh
 set -eu
 
+echo "DB env: DATABASE_URL=${DATABASE_URL:+set} DATABASE_PRIVATE_URL=${DATABASE_PRIVATE_URL:+set} DATABASE_PUBLIC_URL=${DATABASE_PUBLIC_URL:+set} PGHOST=${PGHOST:+set}"
+
+if [ -z "${DATABASE_URL:-}" ] && [ -n "${DATABASE_PRIVATE_URL:-}" ]; then
+  export DATABASE_URL="$DATABASE_PRIVATE_URL"
+  echo "Using DATABASE_PRIVATE_URL"
+fi
+
+if [ -z "${DATABASE_URL:-}" ] && [ -n "${DATABASE_PUBLIC_URL:-}" ]; then
+  export DATABASE_URL="$DATABASE_PUBLIC_URL"
+  echo "Using DATABASE_PUBLIC_URL"
+fi
+
+if [ -z "${DATABASE_URL:-}" ] && [ -n "${PGHOST:-}" ] && [ -n "${PGUSER:-}" ] && [ -n "${PGPASSWORD:-}" ]; then
+  export DATABASE_URL="postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT:-5432}/${PGDATABASE:-railway}"
+  echo "Built DATABASE_URL from PGHOST"
+fi
+
 if [ -z "${DATABASE_URL:-}" ]; then
-  echo "DATABASE_URL is missing on the api service."
-  echo "Add it as a variable reference to Postgres → DATABASE_URL, then redeploy."
+  echo "DATABASE_URL is still missing on the api service."
+  echo "On api → Variables add a variable named DATABASE_URL with value \${{Postgres.DATABASE_URL}}"
+  echo "Service name must match the Postgres card exactly, then Redeploy."
   exit 1
 fi
 
