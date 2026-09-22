@@ -21,7 +21,7 @@ function requireFrom(ctx: { from?: { id: number; username?: string } }) {
 function upgradeKeyboard(billing: Awaited<ReturnType<typeof getBilling>>["billing"]) {
   const keyboard = new InlineKeyboard();
   for (const plan of billing.plans) {
-    keyboard.text(`${plan.title} · ${plan.stars} ⭐ / 30 days`, `upgrade:${plan.id}`).row();
+    keyboard.text(`${plan.title}, ${plan.stars} Stars / 30 days`, `upgrade:${plan.id}`).row();
   }
   return keyboard;
 }
@@ -35,7 +35,7 @@ async function sendStarsInvoice(ctx: Context, invoice: Invoice) {
     prices: invoice.prices,
     subscription_period: invoice.subscription_period,
   });
-  await ctx.reply(`Pay ${invoice.title} with Telegram Stars. Telegram Wallet can cover the Stars.`, {
+  await ctx.reply(`Here's checkout for ${invoice.title}. Pay with Stars. Telegram Wallet works.`, {
     reply_markup: new InlineKeyboard().url("Pay with Stars", link),
   });
 }
@@ -49,7 +49,7 @@ export function registerSettings(bot: Bot) {
     } catch (error) {
       console.error(error);
       await ctx.reply(
-        errorMessage(error, "Couldn't start your trial. Make sure the API is running and try /start again."),
+        errorMessage(error, "Couldn't start your trial. Give it a second and try /start again."),
       );
     }
   });
@@ -66,7 +66,7 @@ export function registerSettings(bot: Bot) {
       await ctx.reply(formatBilling(billing), { reply_markup: upgradeKeyboard(billing) });
     } catch (error) {
       console.error(error);
-      await ctx.reply(errorMessage(error, "Couldn't load your plan. Try again in a moment."));
+      await ctx.reply(errorMessage(error, "Couldn't load your plan. Try /tier again in a second."));
     }
   });
 
@@ -75,12 +75,12 @@ export function registerSettings(bot: Bot) {
     try {
       await upsertUser(from.id, from.username);
       const { billing } = await getBilling(from.id);
-      await ctx.reply("Choose a monthly Telegram Stars plan. Telegram Wallet can pay the Stars.", {
+      await ctx.reply("Pick a plan. You pay with Stars, Telegram Wallet is fine.", {
         reply_markup: upgradeKeyboard(billing),
       });
     } catch (error) {
       console.error(error);
-      await ctx.reply(errorMessage(error, "Couldn't load plans. Try again in a moment."));
+      await ctx.reply(errorMessage(error, "Couldn't load the plans. Try /upgrade again."));
     }
   });
 
@@ -93,7 +93,7 @@ export function registerSettings(bot: Bot) {
       await sendStarsInvoice(ctx, invoice);
     } catch (error) {
       console.error(error);
-      await ctx.reply(errorMessage(error, "Couldn't start checkout. Try /upgrade again."));
+      await ctx.reply(errorMessage(error, "Couldn't open checkout. Try /upgrade again."));
     }
   });
 
@@ -110,10 +110,10 @@ export function registerSettings(bot: Bot) {
         await ctx.answerPreCheckoutQuery(true);
         return;
       }
-      await ctx.answerPreCheckoutQuery(false, { error_message: result.error ?? "Checkout failed." });
+      await ctx.answerPreCheckoutQuery(false, { error_message: result.error ?? "Checkout didn't go through." });
     } catch (error) {
       console.error(error);
-      await ctx.answerPreCheckoutQuery(false, { error_message: "Couldn't verify payment. Try again." });
+      await ctx.answerPreCheckoutQuery(false, { error_message: "Couldn't check that payment. Try again." });
     }
   });
 
@@ -132,11 +132,11 @@ export function registerSettings(bot: Bot) {
         is_first_recurring: payment.is_first_recurring,
         subscription_expiration_date: payment.subscription_expiration_date,
       });
-      await ctx.reply(`You're on ${billing.tier}. ${formatLimits(billing.limits)}`);
+      await ctx.reply(`You're on ${billing.tier === "premium" ? "Premium" : "Paid"} now. ${formatLimits(billing.limits)}`);
     } catch (error) {
       console.error(error);
       await ctx.reply(
-        errorMessage(error, "Payment arrived but Drift Bot couldn't save it. /tier in a minute, or message support."),
+        errorMessage(error, "Payment went through, but I couldn't save it. Check /tier in a minute."),
       );
     }
   });

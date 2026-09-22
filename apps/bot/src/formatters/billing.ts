@@ -1,5 +1,15 @@
 import type { BillingSnapshot } from "@drift-bot/types";
 
+function planName(tier: string): string {
+  if (tier === "paid") {
+    return "Paid";
+  }
+  if (tier === "premium") {
+    return "Premium";
+  }
+  return "Free";
+}
+
 export function formatLimits(limits: BillingSnapshot["limits"]): string {
   const repos = limits.repos == null ? "unlimited repos" : `${limits.repos} repo${limits.repos === 1 ? "" : "s"}`;
   const research =
@@ -7,43 +17,52 @@ export function formatLimits(limits: BillingSnapshot["limits"]): string {
       ? "unlimited deep research"
       : limits.deepResearchPerMonth === 0
         ? "no deep research"
-        : `${limits.deepResearchPerMonth} deep research runs / month`;
+        : `${limits.deepResearchPerMonth} deep research runs a month`;
   return `${repos}, ${limits.digest} digest, ${research}`;
 }
 
 export function formatBilling(billing: BillingSnapshot): string {
   if (billing.source === "trial") {
     const days = billing.trial_days_left ?? 0;
-    return `You're on a Paid trial — ${days} day${days === 1 ? "" : "s"} left.\n${formatLimits(billing.limits)}`;
+    return `You're on a paid trial. ${days} day${days === 1 ? "" : "s"} left.\n${formatLimits(billing.limits)}`;
   }
   if (billing.source === "subscription") {
     const until = billing.subscription_expires_at
-      ? ` Renews/expires ${new Date(billing.subscription_expires_at).toUTCString()}.`
+      ? ` Renews ${new Date(billing.subscription_expires_at).toUTCString()}.`
       : "";
-    return `Plan: ${billing.tier}.${until}\n${formatLimits(billing.limits)}`;
+    return `You're on ${planName(billing.tier)}.${until}\n${formatLimits(billing.limits)}`;
   }
-  return `Plan: Free.\n${formatLimits(billing.limits)}\nSubscribe to keep daily checks after your trial.`;
+  return `You're on Free.\n${formatLimits(billing.limits)}\nSubscribe if you want the daily checks back.`;
 }
 
 export function welcomeText(billing: BillingSnapshot): string {
-  return `Welcome to Drift Bot.
+  return `Hey. I'm Drift Bot.
 
-I watch your GitHub repos for dependency drift, security advisories, and framework-relevant changes — then send you a digest on Telegram.
+I watch the GitHub repos you connect. If a dependency goes stale, a CVE shows up, or something in your stack looks like it might bite you, I message you here.
 
 ${formatBilling(billing)}
 
-Pay later with Telegram Stars (Telegram Wallet can cover the Stars). Trial first, no card required.
+Trial's free, no card. After that you can subscribe with Stars. Telegram Wallet works.
 
-/tier — your plan
-/upgrade — subscribe
-/help — commands`;
+/connect owner/repo  watch a public GitHub repo
+/tier  your plan
+/upgrade  subscribe
+/help  what I can do`;
 }
 
-export const HELP = `Drift Bot commands:
+export const HELP = `Here's what I can do right now:
 
-/start — welcome and start a 30-day Paid trial
-/tier — current plan, trial, and usage window
-/upgrade — subscribe with Telegram Stars
-/help — this list
+/start  say hi and start your 30-day trial
+/connect owner/repo  watch a public GitHub repo
+/repos  what I'm watching
+/disconnect owner/repo  stop watching
+/audit_secrets  leaked keys
+/audit_deps  known CVEs
+/audit_code  risky patterns
+/audit_contracts  Solidity footguns
+/audit  all of it, break before launch
+/tier  see your plan
+/upgrade  subscribe with Stars
+/help  this list
 
-Repo connection, daily checks, and GitHub audits (secrets, deps, code, contracts) ship next.`;
+Public repos only for now. Private repos wait on the GitHub App.`;

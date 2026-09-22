@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { addDays, canCheckout, daysLeft, resolveAccess } from "./entitlements.js";
+import { addDays, canCheckout, canConnectRepo, daysLeft, resolveAccess } from "./entitlements.js";
 
 describe("resolveAccess", () => {
   const now = new Date("2026-09-07T00:00:00.000Z");
@@ -50,7 +50,7 @@ describe("canCheckout", () => {
   it("blocks buying the plan the user already pays for", () => {
     assert.equal(
       canCheckout({ tier: "paid", source: "subscription" }, "paid"),
-      "Already subscribed to Paid.",
+      "You're already on Paid.",
     );
   });
 
@@ -60,6 +60,14 @@ describe("canCheckout", () => {
 
   it("allows checkout during trial", () => {
     assert.equal(canCheckout({ tier: "paid", source: "trial" }, "paid"), null);
+  });
+});
+
+describe("canConnectRepo", () => {
+  it("blocks when the user is at the tier repo cap", () => {
+    assert.equal(canConnectRepo(1, 1), "You're at your repo limit (1). /disconnect one or /upgrade.");
+    assert.equal(canConnectRepo(1, 5), null);
+    assert.equal(canConnectRepo(20, null), null);
   });
 });
 

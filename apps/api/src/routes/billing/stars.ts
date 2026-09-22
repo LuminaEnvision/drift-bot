@@ -79,7 +79,7 @@ export async function registerStarsBillingRoutes(app: FastifyInstance) {
         description: copy.description,
         payload: session.id,
         currency: "XTR",
-        prices: [{ label: `${copy.title} · 30 days`, amount: stars }],
+        prices: [{ label: `${copy.title}, 30 days`, amount: stars }],
         subscription_period: SUBSCRIPTION_PERIOD_SECONDS,
       },
     };
@@ -92,13 +92,13 @@ export async function registerStarsBillingRoutes(app: FastifyInstance) {
     const totalAmount = request.body?.total_amount;
 
     if (!payload) {
-      return { ok: false, error: "Missing invoice payload." };
+      return { ok: false, error: "That checkout is missing. Try /upgrade again." };
     }
     if (!isUuid(payload)) {
-      return { ok: false, error: "This invoice is no longer valid." };
+      return { ok: false, error: "That checkout expired. Try /upgrade again." };
     }
     if (currency !== "XTR") {
-      return { ok: false, error: "Pay with Telegram Stars." };
+      return { ok: false, error: "Please pay with Stars." };
     }
 
     const user = await loadUser(telegramUserId);
@@ -106,10 +106,10 @@ export async function registerStarsBillingRoutes(app: FastifyInstance) {
       where: { id: payload },
     });
     if (!session || session.userId !== user.id) {
-      return { ok: false, error: "This invoice is no longer valid." };
+      return { ok: false, error: "That checkout expired. Try /upgrade again." };
     }
     if (typeof totalAmount !== "number" || totalAmount !== session.stars) {
-      return { ok: false, error: "Price mismatch." };
+      return { ok: false, error: "That price doesn't match. Try /upgrade again." };
     }
 
     return { ok: true };

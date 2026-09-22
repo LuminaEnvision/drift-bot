@@ -9,7 +9,7 @@ export async function runContractAudit(_repoPath: string): Promise<AuditResult> 
     tool: "solana",
     ok: false,
     unsupported: true,
-    message: "not yet supported — Solana contract auditing ships in v2",
+    message: "Solana contract auditing isn't in yet. That's v2.",
     findings: [],
   };
 }

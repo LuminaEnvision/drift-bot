@@ -2,7 +2,7 @@
 
 Telegram bot that monitors GitHub repos for dependency drift, security advisories, and framework-relevant changes, plus on-demand GitHub audits (secrets, deps, Semgrep, Slither, **Break before launch**) and deep research. Free / paid / premium tiers gate repo count, digest frequency, and deep research.
 
-This repo is the skeleton plus billing: a `/start` trial, Telegram Stars checkout, a health check, and a Postgres schema. GitHub App, scheduler, and research are not wired yet.
+This repo is billing plus public-repo audits: a `/start` trial, Telegram Stars checkout, `/connect owner/repo`, and the MVP audit commands. GitHub App (private repos), the daily scheduler, and LLM deep research are not wired yet.
 
 ## Stack
 
@@ -27,6 +27,10 @@ Checkout is **Telegram Stars**, not a separate crypto flow. Stars is the native 
 | Deep research | — | 5 / month | unlimited (soft limit) |
 
 Prices are `PAID_STARS_MONTHLY` and `PREMIUM_STARS_MONTHLY` in `.env`.
+
+## Deploy (not localhost)
+
+The bot only answers when an API + bot process are running. For phones when this laptop is off, host Postgres, the API, and the bot. Playbook: [docs/deploy.md](docs/deploy.md)
 
 ## Local loop
 
@@ -56,20 +60,19 @@ If `/newbot` is blocked on your Telegram account, send [docs/partner-botfather.m
 
 | Path | Role |
 |---|---|
-| `apps/bot` | grammY: `/start`, `/help`, `/tier`, `/upgrade` |
-| `apps/api` | Fastify: health, users, Stars billing |
-| `apps/worker` | Queue/job stubs (not wired) |
+| `apps/bot` | grammY: billing, `/connect`, `/repos`, MVP audits |
+| `apps/api` | Fastify: health, users, Stars billing, public repo connect + audit |
+| `apps/worker` | Queue/job stubs (audits run in the API today) |
 | `packages/db` | Prisma schema + migrations |
 | `packages/types` | Shared TS types |
-| `packages/audit-engine` | Check catalog + scanner wrappers (stubs) |
+| `packages/audit-engine` | Check catalog + secrets / deps / code / contracts scanners |
 | `packages/stack-detector` | Manifest fingerprinting |
 | `packages/llm-engine` | Deep-research catalog |
 | `infra/docker` | Local Postgres Compose file |
 
 ## What's next
 
-1. GitHub App install/OAuth and `/connect` + `/repos`
-2. Stack fingerprint on connect
-3. Daily minimum check (scheduler + registry/CVE sources)
-4. Enforce repo / research limits using `resolveAccess`
-5. GitHub audits — `docs/audit-checklist.md` (MVP: `/audit_secrets`, `/audit_deps`, `/audit_code`, `/audit_contracts`, then `/audit` **Break before launch**)
+1. GitHub App install/OAuth for private repos
+2. Daily minimum check (scheduler + digest)
+3. Swap in Gitleaks / Semgrep / Slither when those CLIs are in the worker image
+4. LLM wrap for `/audit` and deep research (`/changelog`, `/migrate`, `/compat`, `/ask`)

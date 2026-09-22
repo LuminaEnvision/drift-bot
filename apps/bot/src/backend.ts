@@ -1,6 +1,6 @@
-import type { BillingSnapshot, Invoice, PaidPlan } from "@drift-bot/types";
+import type { AuditKind, AuditReport, BillingSnapshot, ConnectedRepo, Invoice, PaidPlan } from "@drift-bot/types";
 
-export type { BillingSnapshot, Invoice, PaidPlan };
+export type { AuditKind, AuditReport, BillingSnapshot, ConnectedRepo, Invoice, PaidPlan };
 
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3000";
 const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET;
@@ -83,6 +83,31 @@ export function completeStarsPayment(input: {
   return api<{ billing: BillingSnapshot }>("/v1/payments/stars/complete", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+export function listRepos(telegramUserId: number) {
+  return api<{ repos: ConnectedRepo[] }>(`/v1/users/${telegramUserId}/repos`);
+}
+
+export function connectRepo(telegramUserId: number, repo: string) {
+  return api<{ repo: ConnectedRepo }>("/v1/repos/connect", {
+    method: "POST",
+    body: JSON.stringify({ telegram_user_id: telegramUserId, repo }),
+  });
+}
+
+export function disconnectRepo(telegramUserId: number, repo: string) {
+  return api<{ ok: boolean; repo: ConnectedRepo }>("/v1/repos/disconnect", {
+    method: "POST",
+    body: JSON.stringify({ telegram_user_id: telegramUserId, repo }),
+  });
+}
+
+export function runRepoAudit(telegramUserId: number, kind: AuditKind, repo?: string) {
+  return api<{ report: AuditReport }>("/v1/repos/audit", {
+    method: "POST",
+    body: JSON.stringify({ telegram_user_id: telegramUserId, kind, repo }),
   });
 }
 

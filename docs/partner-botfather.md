@@ -33,17 +33,17 @@ The display name should stay **Drift Bot** even if the `@username` has to be dif
 **About** (`/setabouttext`, max 120 characters):
 
 ```
-Watches GitHub repos for dependency drift, CVEs, and pre-launch audits. Digests land in Telegram.
+I watch your GitHub repos for stale deps, CVEs, and pre-launch issues, then ping you here.
 ```
 
 **Description** (`/setdescription`):
 
 ```
-Drift Bot watches the GitHub repos you connect for dependency drift, security advisories, and framework-relevant changes, then sends a digest on Telegram.
+I watch the GitHub repos you connect. Stale dependencies, security advisories, framework changes that might bite you. When something's worth knowing, I send a digest here.
 
-On-demand audits: secrets, dependencies, code (Semgrep), smart contracts (Slither), and Break before launch — find critical bugs before your first 100 users do.
+Later I can also audit the code: secrets, deps, Semgrep, Solidity, and a Break before launch pass so you catch the ugly bugs before users do.
 
-30-day Paid trial, then subscribe with Telegram Stars.
+30-day paid trial. After that, subscribe with Stars.
 ```
 
 **Bot picture:** upload `docs/drift-bot-logo.png` from the Drift Bot repo (square PNG). If you do not have the file, I will send it.
@@ -51,10 +51,18 @@ On-demand audits: secrets, dependencies, code (Semgrep), smart contracts (Slithe
 **Commands** (`/setcommands`):
 
 ```
-start - Welcome and start a 30-day Paid trial
-help - Command list
-tier - Current plan and trial
-upgrade - Subscribe with Telegram Stars
+start - Say hi and start a 30-day trial
+help - What I can do
+connect - Watch a public GitHub repo
+repos - Repos I'm watching
+disconnect - Stop watching a repo
+audit_secrets - Look for leaked keys
+audit_deps - Known CVEs
+audit_code - Risky code patterns
+audit_contracts - Solidity footguns
+audit - Break before launch
+tier - Your plan
+upgrade - Subscribe with Stars
 ```
 
 Leave **group privacy** on (default). This bot is for private chats first.

@@ -6,6 +6,8 @@
     "dev": "turbo run dev --filter=@drift-bot/bot --filter=@drift-bot/api",
     "dev:bot": "turbo run dev --filter=@drift-bot/bot",
     "dev:api": "turbo run dev --filter=@drift-bot/api",
+    "start:api": "pnpm --filter @drift-bot/db migrate && pnpm --filter @drift-bot/api start",
+    "start:bot": "pnpm --filter @drift-bot/bot start",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",

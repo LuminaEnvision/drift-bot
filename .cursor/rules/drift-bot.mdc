@@ -9,7 +9,7 @@ Telegram repo-monitoring agent. Users connect GitHub repos; Drift Bot runs cheap
 
 ## Current phase
 
-Skeleton plus billing in a pnpm + Turborepo monorepo: 30-day Paid trial on first `/start`, then monthly Telegram Stars subscriptions (`/tier`, `/upgrade`). Do not add the GitHub App, scheduler, or scanner implementations until asked.
+Billing plus public-repo audits in a pnpm + Turborepo monorepo. Users get a 30-day Paid trial on first `/start`, then monthly Telegram Stars subscriptions (`/tier`, `/upgrade`). They connect **public** GitHub repos with `/connect owner/repo` and run `/audit_secrets`, `/audit_deps`, `/audit_code`, `/audit_contracts`, and `/audit` (Break before launch). Do not add the GitHub App, scheduler, or LLM deep research until asked.
 
 ## Billing
 
@@ -22,13 +22,13 @@ Skeleton plus billing in a pnpm + Turborepo monorepo: 30-day Paid trial on first
 
 `apps/bot`, `apps/api`, `apps/worker`; `packages/{db,types,github-client,stack-detector,registry-clients,audit-engine,llm-engine}`. `packages/db` stays **Prisma** (not Drizzle).
 
-## Planned GitHub checks (not wired yet)
+## Live GitHub checks
 
 What we offer on a connected repo is `docs/audit-checklist.md` / `packages/audit-engine/src/catalog.ts`.
 
-MVP rollout: `/audit_secrets` (Gitleaks), `/audit_deps` (same as daily CVE digest), `/audit_code` (Semgrep), `/audit_contracts` (Slither, if `.sol` files). `/audit` (**Break before launch**) is the LLM wrap: 30+ issues, P0/P1/P2, fix every P0.
+MVP live now: `/audit_secrets` (pattern scan), `/audit_deps` (OSV CVEs), `/audit_code` (risky-pattern SAST), `/audit_contracts` (Solidity footguns, if `.sol` files). `/audit` (**Break before launch**) runs all of those and asks the user to fix every P0. External CLIs (Gitleaks, Semgrep, Slither) and the LLM wrap can replace these later.
 
-Solana contract audit is a stub in `packages/audit-engine/src/contracts/solana/` (v2).
+Solana contract audit is a stub in `packages/audit-engine/src/contracts/solana/` (v2). Public repos only until the GitHub App ships.
 
 ## Planned deep research
 

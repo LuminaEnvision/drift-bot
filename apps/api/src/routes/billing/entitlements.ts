@@ -19,14 +19,12 @@ export const TIER_LIMITS: Record<Plan, Limits> = {
 
 export const PLAN_COPY: Record<PaidPlan, { title: string; description: string }> = {
   paid: {
-    title: "Drift Bot Paid",
-    description:
-      "Monthly: 5 repos, daily digests, 5 deep research runs. Renews every 30 days via Telegram Stars.",
+    title: "Paid",
+    description: "5 repos, daily digests, 5 deep research runs. Bills every 30 days in Stars.",
   },
   premium: {
-    title: "Drift Bot Premium",
-    description:
-      "Monthly: unlimited repos, daily priority digests, unlimited deep research. Renews every 30 days via Telegram Stars.",
+    title: "Premium",
+    description: "Unlimited repos, daily priority digests, unlimited deep research. Bills every 30 days in Stars.",
   },
 };
 
@@ -117,12 +115,22 @@ export function toBillingSnapshot(user: BillingUser, now = new Date()): BillingS
   };
 }
 
+export function canConnectRepo(activeCount: number, repoLimit: number | null): string | null {
+  if (repoLimit == null) {
+    return null;
+  }
+  if (activeCount >= repoLimit) {
+    return `You're at your repo limit (${repoLimit}). /disconnect one or /upgrade.`;
+  }
+  return null;
+}
+
 export function canCheckout(access: ReturnType<typeof resolveAccess>, plan: PaidPlan): string | null {
   if (access.source === "subscription" && access.tier === plan) {
-    return `Already subscribed to ${plan === "paid" ? "Paid" : "Premium"}.`;
+    return `You're already on ${plan === "paid" ? "Paid" : "Premium"}.`;
   }
   if (access.source === "subscription" && access.tier === "premium" && plan === "paid") {
-    return "Already on Premium.";
+    return "You're already on Premium.";
   }
   return null;
 }

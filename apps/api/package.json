@@ -4,19 +4,21 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file=../../.env src/index.ts",
-    "start": "tsx --env-file=../../.env src/index.ts",
+    "start": "tsx src/index.ts",
     "build": "tsc --noEmit -p tsconfig.json",
     "lint": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --test src/routes/billing/entitlements.test.ts"
   },
   "dependencies": {
+    "@drift-bot/audit-engine": "workspace:*",
     "@drift-bot/db": "workspace:*",
+    "@drift-bot/github-client": "workspace:*",
     "@drift-bot/types": "workspace:*",
-    "fastify": "^5.6.0"
+    "fastify": "^5.6.0",
+    "tsx": "^4.20.5"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
-    "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
 }

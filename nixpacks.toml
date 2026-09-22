@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["git"]
+
+[variables]
+NIXPACKS_NODE_VERSION = "22"

@@ -77,7 +77,8 @@ model GithubInstallation {
 model Repo {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId           String   @map("user_id") @db.Uuid
-  installationId   String   @map("installation_id") @db.Uuid
+  installationId   String?  @map("installation_id") @db.Uuid
+  source           String   @default("public")
   fullName         String   @map("full_name")
   defaultBranch    String   @default("main") @map("default_branch")
   stackFingerprint Json?    @map("stack_fingerprint")
@@ -85,8 +86,8 @@ model Repo {
   isActive         Boolean  @default(true) @map("is_active")
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  user         User               @relation(fields: [userId], references: [id])
-  installation GithubInstallation @relation(fields: [installationId], references: [id])
+  user         User                @relation(fields: [userId], references: [id])
+  installation GithubInstallation? @relation(fields: [installationId], references: [id])
   dailyRuns    DailyRun[]
   researchRuns ResearchRun[]
 

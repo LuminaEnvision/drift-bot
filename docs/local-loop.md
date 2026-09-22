@@ -89,6 +89,7 @@ Expect Prisma to apply:
 
 - `20260907120000_init`
 - `20260907130000_trial_and_payments`
+- `20260922100000_public_repos`
 
 If this fails with a connection error, step 5 is not healthy yet.
 
@@ -145,6 +146,8 @@ Open the bot in Telegram (`t.me/<your_bot_username>` or search the name).
 | `/help` | Command list |
 | `/tier` | Same plan text as `/start` |
 | `/upgrade` | Paid / Premium Stars buttons |
+| `/connect facebook/react` | Confirms the public repo and shows audit commands |
+| `/audit_deps` | CVE pass on that repo (needs network) |
 
 `/upgrade` → **Pay with Stars** only works after you tap a plan; you do not need to complete a real payment for the local loop.
 

@@ -56,6 +56,24 @@ export type AuditResult = {
   findings: AuditFinding[];
 };
 
+export type AuditKind = "secrets" | "deps" | "code" | "contracts" | "full";
+
+export type ConnectedRepo = {
+  id: string;
+  full_name: string;
+  default_branch: string;
+  source: "public" | "github_app";
+  stacks: StackKind[];
+  is_active: boolean;
+};
+
+export type AuditReport = {
+  repo: string;
+  kind: AuditKind;
+  results: AuditResult[];
+  findings: AuditFinding[];
+};
+
 export class NotImplementedError extends Error {
   constructor(message: string) {
     super(message);

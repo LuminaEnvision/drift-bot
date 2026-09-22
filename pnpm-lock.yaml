@@ -20,9 +20,15 @@ importers:
 
   apps/api:
     dependencies:
+      '@drift-bot/audit-engine':
+        specifier: workspace:*
+        version: link:../../packages/audit-engine
       '@drift-bot/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@drift-bot/github-client':
+        specifier: workspace:*
+        version: link:../../packages/github-client
       '@drift-bot/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -42,6 +48,9 @@ importers:
 
   apps/bot:
     dependencies:
+      '@drift-bot/github-client':
+        specifier: workspace:*
+        version: link:../../packages/github-client
       '@drift-bot/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -77,6 +86,9 @@ importers:
 
   packages/audit-engine:
     dependencies:
+      '@drift-bot/registry-clients':
+        specifier: workspace:*
+        version: link:../registry-clients
       '@drift-bot/stack-detector':
         specifier: workspace:*
         version: link:../stack-detector
@@ -108,10 +120,20 @@ importers:
         version: 5.9.3
 
   packages/github-client:
+    dependencies:
+      '@drift-bot/stack-detector':
+        specifier: workspace:*
+        version: link:../stack-detector
+      '@drift-bot/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@types/node':
         specifier: ^22.18.0
         version: 22.20.4
+      tsx:
+        specifier: ^4.20.5
+        version: 4.23.13
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
