@@ -36,7 +36,11 @@ openssl rand -hex 32
 
 ## 3. API service
 
-In the same project, add a service from the same GitHub repo (or rename the first one to `api`).
+Rename the first GitHub service to `api` if you want. Railpack will fail on this repo (it thinks the monorepo is Nx / Next). Use the Dockerfile instead.
+
+**Settings → Build**
+
+- Builder: Dockerfile (or Config-as-code file: `/railway.api.json`)
 
 **Start command:**
 
@@ -65,6 +69,8 @@ Copy that public URL, like `https://drift-api-production.up.railway.app`. No tra
 ## 4. Bot service
 
 **New service** from the same GitHub repo. Call it `bot`.
+
+**Settings → Config-as-code file:** `/railway.bot.json` so this service does not start the API.
 
 **Start command:**
 
