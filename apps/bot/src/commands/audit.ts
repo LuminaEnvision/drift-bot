@@ -25,6 +25,10 @@ async function runAndReply(ctx: Context, kind: AuditKind, repo?: string) {
     await ctx.reply(chunk);
   }
 
+  if (kind !== "full") {
+    return;
+  }
+
   const prompt = formatAgentPrompt(report);
   const slug = report.repo.replaceAll("/", "-").replaceAll(/[^A-Za-z0-9._-]/g, "_");
   const base = `drift-${slug}-${report.kind}`;

@@ -56,6 +56,7 @@ help - What I can do
 connect - Watch a public GitHub repo
 repos - Repos I'm watching
 disconnect - Stop watching a repo
+digest - Cheap CVE + CI check now
 audit_secrets - Look for leaked keys
 audit_deps - Known CVEs
 audit_code - Risky code patterns

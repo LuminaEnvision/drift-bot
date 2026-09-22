@@ -59,7 +59,10 @@ export function formatAuditReport(report: AuditReport): string {
   const actionable = report.findings.filter((finding) => finding.severity !== "info");
   const notes = report.results.map((result) => result.message).filter(Boolean);
 
-  const files = "Full list is in the PDF and the .md. Open the .md, copy all of it, paste into Cursor.";
+  const files =
+    report.kind === "full"
+      ? "Full list is in the PDF and the .md. Open the .md, copy all of it, paste into Cursor."
+      : "Want the downloadable report? /audit runs the full pass and sends a PDF.";
 
   if (actionable.length === 0) {
     const extra = notes.length > 0 ? `\n\n${notes.join("\n")}` : "";
@@ -69,7 +72,7 @@ export function formatAuditReport(report: AuditReport): string {
   const shown = report.findings.slice(0, 8);
   const more = report.findings.length - shown.length;
   const body = shown.map((finding) => formatFinding(finding)).join("\n\n");
-  const leftover = more > 0 ? `\n\n${more} more in the files.` : "";
+  const leftover = more > 0 ? `\n\n${more} more. Run /audit if you want the full file.` : "";
   const launch = report.kind === "full" ? "\n\nFix every P0 before you ship." : "";
 
   return `${title}\n\n${actionable.length} finding${actionable.length === 1 ? "" : "s"}\n\n${body}${leftover}${launch}\n\n${files}`;

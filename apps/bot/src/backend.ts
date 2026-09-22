@@ -159,6 +159,9 @@ export function errorMessage(error: unknown, fallback: string): string {
     if (error.status === 401) {
       return "The bot and API secrets do not match. INTERNAL_API_SECRET must be the same on both Railway services.";
     }
+    if (error.status === 404) {
+      return "The API I reached does not have /digest yet. Wait for the api card on Railway to finish this deploy, then try /digest again.";
+    }
     try {
       const parsed = JSON.parse(error.body) as { error?: string };
       if (parsed.error) {

@@ -61,9 +61,8 @@ export const HELP = `Here's what I can do right now:
 /audit_deps  known CVEs
 /audit_code  risky patterns
 /audit_contracts  Solidity footguns
-/audit  all of it, break before launch
-Audits come back as a short chat summary plus a PDF and a .md you can paste into Cursor.
-I also run the cheap digest on my own. Daily on Paid and Premium, weekly on Free.
+/audit  all of it, break before launch. This one sends a PDF and a .md you can paste into Cursor.
+I also run the cheap digest on my own. Daily on Paid and Premium, weekly on Free. Type /digest if it is not in the menu yet.
 /tier  see your plan
 /upgrade  subscribe with Stars
 /help  this list
