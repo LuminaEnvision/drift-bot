@@ -16,10 +16,16 @@ function asOptionalString(value: unknown): string | undefined {
 export async function registerUserRoutes(app: FastifyInstance) {
   app.post<{ Body: TelegramUserBody }>("/users/telegram", async (request) => {
     const telegramUserId = parseTelegramUserId(request.body?.telegram_user_id);
-    const telegramUsername = asOptionalString(request.body?.telegram_username) ?? null;
+    const incomingUsername = asOptionalString(request.body?.telegram_username) ?? null;
     const now = new Date();
+    const existing = await prisma.user.findUnique({ where: { telegramUserId } });
+    const telegramUsername = incomingUsername ?? existing?.telegramUsername ?? null;
+    const comp = isCompPremium(telegramUsername, telegramUserId);
+    request.log.info(
+      { telegramUserId: telegramUserId.toString(), telegramUsername, comp },
+      "upsert telegram user",
+    );
 
-    const comp = isCompPremium(telegramUsername);
     const user = await prisma.user.upsert({
       where: { telegramUserId },
       create: {
@@ -47,7 +53,10 @@ export async function registerUserRoutes(app: FastifyInstance) {
       if (!user) {
         throw new HttpError(404, "user not found");
       }
-      if (isCompPremium(user.telegramUsername) && (user.tier !== "premium" || user.tierExpiresAt != null)) {
+      if (
+        isCompPremium(user.telegramUsername, user.telegramUserId) &&
+        (user.tier !== "premium" || user.tierExpiresAt != null)
+      ) {
         user = await prisma.user.update({
           where: { id: user.id },
           data: lifetimePremiumWrite(),

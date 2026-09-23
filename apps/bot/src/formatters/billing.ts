@@ -12,35 +12,41 @@ function planName(tier: string): string {
 
 export function formatLimits(limits: BillingSnapshot["limits"]): string {
   const repos = limits.repos == null ? "unlimited repos" : `${limits.repos} repo${limits.repos === 1 ? "" : "s"}`;
-  const research =
-    limits.deepResearchPerMonth == null
-      ? "unlimited deep research"
-      : limits.deepResearchPerMonth === 0
-        ? "no deep research"
-        : `${limits.deepResearchPerMonth} deep research runs a month`;
-  return `${repos}, ${limits.digest} digest, ${research}`;
+  return `${repos}, ${limits.digest} digest`;
 }
 
-export function formatBilling(billing: BillingSnapshot): string {
+export function accountLine(telegramUserId: number, username?: string): string {
+  const handle = username ? `@${username}` : "no @username set";
+  return `Your Telegram id is ${telegramUserId}. Username: ${handle}`;
+}
+
+export function formatBilling(
+  billing: BillingSnapshot,
+  identity?: { id: number; username?: string },
+): string {
+  const account = identity ? `\n${accountLine(identity.id, identity.username)}` : "";
   if (billing.source === "trial") {
     const days = billing.trial_days_left ?? 0;
-    return `You're on a paid trial. ${days} day${days === 1 ? "" : "s"} left.\n${formatLimits(billing.limits)}`;
+    return `You're on a paid trial. ${days} day${days === 1 ? "" : "s"} left.\n${formatLimits(billing.limits)}${account}`;
   }
   if (billing.source === "subscription") {
     const until = billing.subscription_expires_at
       ? ` Renews ${new Date(billing.subscription_expires_at).toUTCString()}.`
-      : "";
-    return `You're on ${planName(billing.tier)}.${until}\n${formatLimits(billing.limits)}`;
+      : " Complimentary. No expiry.";
+    return `You're on ${planName(billing.tier)}.${until}\n${formatLimits(billing.limits)}${account}`;
   }
-  return `You're on Free.\n${formatLimits(billing.limits)}\nSubscribe if you want the daily checks back.`;
+  return `You're on Free.\n${formatLimits(billing.limits)}\nSubscribe if you want the daily checks back.${account}`;
 }
 
-export function welcomeText(billing: BillingSnapshot): string {
+export function welcomeText(
+  billing: BillingSnapshot,
+  identity?: { id: number; username?: string },
+): string {
   return `Hey. I'm Drift Bot.
 
 I watch the GitHub repos you connect. Cheap CVE and CI check on a schedule. Paid and the trial get that every day. Free gets it once a week. I message you here when something changes.
 
-${formatBilling(billing)}
+${formatBilling(billing, identity)}
 
 Trial's free, no card. After that you can subscribe with Stars. Telegram Wallet works.
 
@@ -68,4 +74,5 @@ I also run the cheap digest on my own. Daily on Paid and Premium, weekly on Free
 /upgrade  subscribe with Stars
 /help  this list
 
-Public repos only for now. Private repos wait on the GitHub App.`;
+Public repos only for now. Private repos wait on the GitHub App.
+Deep research (/ask, /changelog, /migrate, /compat) is not live yet.`;

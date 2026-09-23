@@ -44,8 +44,11 @@ export function registerSettings(bot: Bot) {
   bot.command("start", async (ctx) => {
     const from = requireFrom(ctx);
     try {
+      console.log("telegram /start", from.id, from.username ?? "(no username)");
       const { billing } = await upsertUser(from.id, from.username);
-      await ctx.reply(welcomeText(billing), { reply_markup: upgradeKeyboard(billing) });
+      await ctx.reply(welcomeText(billing, { id: from.id, username: from.username }), {
+        reply_markup: upgradeKeyboard(billing),
+      });
     } catch (error) {
       console.error(error);
       await ctx.reply(
@@ -63,7 +66,9 @@ export function registerSettings(bot: Bot) {
     try {
       await upsertUser(from.id, from.username);
       const { billing } = await getBilling(from.id);
-      await ctx.reply(formatBilling(billing), { reply_markup: upgradeKeyboard(billing) });
+      await ctx.reply(formatBilling(billing, { id: from.id, username: from.username }), {
+        reply_markup: upgradeKeyboard(billing),
+      });
     } catch (error) {
       console.error(error);
       await ctx.reply(errorMessage(error, "Couldn't load your plan. Try /tier again in a second."));
