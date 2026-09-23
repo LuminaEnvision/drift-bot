@@ -56,7 +56,7 @@ export type AuditResult = {
   findings: AuditFinding[];
 };
 
-export type AuditKind = "secrets" | "deps" | "code" | "contracts" | "full";
+export type AuditKind = "secrets" | "deps" | "code" | "contracts" | "surface" | "full";
 
 export type ConnectedRepo = {
   id: string;

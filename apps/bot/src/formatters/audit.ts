@@ -5,6 +5,7 @@ const KIND_TITLE: Record<AuditReport["kind"], string> = {
   deps: "Dependencies",
   code: "Code",
   contracts: "Contracts",
+  surface: "Surface",
   full: "Break before launch",
 };
 
@@ -29,6 +30,7 @@ export function formatConnected(repo: ConnectedRepo): string {
 I'll run a cheap CVE and CI check ${cadence}, and message you when something changes.
 
 /digest  run that check now
+/audit_surface  public site door check
 /audit  full pass, break before launch`;
 }
 

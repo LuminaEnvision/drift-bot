@@ -14,7 +14,7 @@ type RepoBody = TelegramUserBody & { repo?: unknown };
 
 type AuditBody = RepoBody & { kind?: unknown };
 
-const AUDIT_KINDS = new Set<AuditKind>(["secrets", "deps", "code", "contracts", "full"]);
+const AUDIT_KINDS = new Set<AuditKind>(["secrets", "deps", "code", "contracts", "surface", "full"]);
 
 function asRepoInput(value: unknown): string {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -30,7 +30,7 @@ function asRepoInput(value: unknown): string {
 function asAuditKind(value: unknown): AuditKind {
   const kind = String(value ?? "");
   if (!AUDIT_KINDS.has(kind as AuditKind)) {
-    throw new HttpError(400, "Pick secrets, deps, code, contracts, or full.");
+    throw new HttpError(400, "Pick secrets, deps, code, contracts, surface, or full.");
   }
   return kind as AuditKind;
 }

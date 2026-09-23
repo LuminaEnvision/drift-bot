@@ -5,6 +5,7 @@ const KIND_LABEL: Record<AuditReport["kind"], string> = {
   deps: "dependencies (known CVEs)",
   code: "code (risky patterns)",
   contracts: "contracts (Solidity footguns)",
+  surface: "surface (public site door check)",
   full: "Break before launch (full pass)",
 };
 
@@ -124,6 +125,13 @@ function extraForFinding(finding: AuditFinding): { why: string; task: string; ch
       why: "This pattern can be RCE, XSS, or a data leak. It is also a common false positive on static JSON-LD and UI copy.",
       task: "Read the surrounding code. Patch only if user input can reach it. Skip JSON-LD, escaped print HTML, and strings that are not SQL.",
       check: "Say skip or show the small patch. Do not rewrite the file.",
+    };
+  }
+  if (finding.tool === "surface") {
+    return {
+      why: "The repo's public homepage is missing a header or is serving a file that should not be public.",
+      task: "If a file like .env or .git is public, take it down and rotate secrets. If it is only a missing header, add the header. This is not proof of a live bot attack.",
+      check: "Re-fetch the URL. Confirm the file 404s. Do not treat this as a traffic log.",
     };
   }
   if (finding.tool === "contracts" || finding.tool === "evm" || finding.tool === "solana") {

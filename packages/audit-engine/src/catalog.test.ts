@@ -24,4 +24,11 @@ describe("audit offering", () => {
     assert.equal(ci?.mvp, true);
     assert.equal(ci?.foldedInto, "daily digest");
   });
+
+  it("ships the public site door check as /audit_surface", () => {
+    const headers = AUDIT_CHECKS.find((check) => check.id === "headers");
+    assert.equal(headers?.command, "/audit_surface");
+    assert.equal(headers?.mvp, true);
+    assert.ok(mvpAuditChecks().some((check) => check.command === "/audit_surface"));
+  });
 });

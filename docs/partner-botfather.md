@@ -61,6 +61,7 @@ audit_secrets - Look for leaked keys
 audit_deps - Known CVEs
 audit_code - Risky code patterns
 audit_contracts - Solidity footguns
+audit_surface - Public site door check
 audit - Break before launch
 tier - Your plan
 upgrade - Subscribe with Stars

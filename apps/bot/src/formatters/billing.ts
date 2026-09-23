@@ -61,6 +61,7 @@ export const HELP = `Here's what I can do right now:
 /audit_deps  known CVEs
 /audit_code  risky patterns
 /audit_contracts  Solidity footguns
+/audit_surface  public site door check (headers, accidental .env / .git)
 /audit  all of it, break before launch. This one sends a PDF and a .md you can paste into Cursor.
 I also run the cheap digest on my own. Daily on Paid and Premium, weekly on Free. Type /digest if it is not in the menu yet.
 /tier  see your plan

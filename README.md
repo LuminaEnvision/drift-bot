@@ -28,6 +28,7 @@ Drift Bot watches the public GitHub repos you connect. It checks known CVEs and 
 - `/audit_deps` known CVEs
 - `/audit_code` risky patterns
 - `/audit_contracts` Solidity footguns (if there are `.sol` files)
+- `/audit_surface` public site door check (headers, accidental `.env` / `.git`). Not a live bot-attack feed
 - `/audit` Break before launch: all of the above. Fix every P0. This one sends a PDF and a `.md`
 
 **Account**

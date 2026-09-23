@@ -57,7 +57,7 @@ Machine-readable catalog: `api/src/audit-checks.ts`.
 | Check | Tools | Command idea | MVP |
 |---|---|---|---|
 | Exposed secrets/keys in client-side bundles | `secretlint`, manual grep patterns on built assets | fold into `/audit_secrets` | no |
-| Missing security headers (CSP, HSTS, etc.) | `securityheaders.com` API, `helmet` config check for Node | `/audit_headers <url>` — only if the repo deploys a public web service | no |
+| Missing security headers (CSP, HSTS, etc.) plus accidental public `.env` / `.git` | fetch the repo's own homepage | `/audit_surface` (also on the daily digest). Door check only, not a live bot-attack feed | yes |
 | Open CORS / auth misconfig | manual checklist item, not easily automatable — flag as a prompt-based LLM review of route definitions | fold into `/audit_code` deep-dive | no |
 
 ## 8. Smart contract specific (relevant given the Web3 stack)

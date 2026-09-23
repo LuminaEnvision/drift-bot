@@ -89,6 +89,15 @@ export function registerAudits(bot: Bot) {
     }
   });
 
+  bot.command("audit_surface", async (ctx) => {
+    try {
+      await runAndReply(ctx, "surface", commandRepo(ctx));
+    } catch (error) {
+      console.error(error);
+      await ctx.reply(errorMessage(error, "Couldn't run the surface check. Try again."));
+    }
+  });
+
   bot.command("audit", async (ctx) => {
     try {
       await runAndReply(ctx, "full", commandRepo(ctx));
@@ -98,7 +107,7 @@ export function registerAudits(bot: Bot) {
     }
   });
 
-  bot.callbackQuery(/^audit:(secrets|deps|code|contracts|full):(.+)$/, async (ctx) => {
+  bot.callbackQuery(/^audit:(secrets|deps|code|contracts|surface|full):(.+)$/, async (ctx) => {
     const kind = ctx.match[1] as AuditKind;
     const repo = ctx.match[2];
     await ctx.answerCallbackQuery();

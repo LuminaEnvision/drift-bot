@@ -162,9 +162,9 @@ export const AUDIT_CHECKS: readonly AuditCheck[] = [
     category: "API & runtime security",
     check: "Missing security headers (CSP, HSTS, etc.)",
     tools: ["securityheaders.com", "helmet config check"],
-    command: "/audit_headers",
-    mvp: false,
-    notes: "Only if the repo deploys a public web service; takes a URL.",
+    command: "/audit_surface",
+    mvp: true,
+    notes: "Homepage from package.json, CNAME, vercel.json, or README. Headers plus a few accidental public files. Not a live bot-attack feed.",
   },
   {
     id: "cors_auth",

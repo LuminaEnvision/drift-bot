@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json",
     "lint": "tsc --noEmit -p tsconfig.json",
-    "test": "tsx --test src/catalog.test.ts src/secrets.test.ts src/code.test.ts src/deps.test.ts",
+    "test": "tsx --test src/catalog.test.ts src/secrets.test.ts src/code.test.ts src/deps.test.ts src/surface/urls.test.ts src/surface/index.test.ts",
     "dev": "echo skip"
   },
   "devDependencies": {

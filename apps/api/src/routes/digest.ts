@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "@drift-bot/db";
-import { runAudit } from "@drift-bot/audit-engine";
+import { runCheapPass } from "@drift-bot/audit-engine";
 import { fetchCiStatus, parseRepoRef, withClonedRepo } from "@drift-bot/github-client";
 import type { DigestReport, Plan } from "@drift-bot/types";
 import { resolveAccess, TIER_LIMITS } from "./billing/entitlements.js";
@@ -135,7 +135,7 @@ async function runAndStore(
 ): Promise<DigestReport> {
   const previous = parseStoredDigest(repo.dailyRuns[0]?.findings);
   const [audit, ci] = await Promise.all([
-    withClonedRepo(repo.fullName, (repoPath) => runAudit("deps", repoPath, repo.fullName)),
+    withClonedRepo(repo.fullName, (repoPath) => runCheapPass(repoPath, repo.fullName)),
     fetchCiStatus(repo.fullName, repo.defaultBranch),
   ]);
 

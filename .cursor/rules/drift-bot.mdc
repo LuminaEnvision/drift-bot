@@ -9,7 +9,7 @@ Telegram repo-monitoring agent. Users connect GitHub repos; Drift Bot runs cheap
 
 ## Current phase
 
-Billing, public-repo audits, and the cheap digest in a pnpm + Turborepo monorepo. Users get a 30-day Paid trial on first `/start`, then monthly Telegram Stars subscriptions (`/tier`, `/upgrade`). They connect **public** GitHub repos with `/connect owner/repo` and run `/audit_secrets`, `/audit_deps`, `/audit_code`, `/audit_contracts`, `/audit` (Break before launch), and `/digest`. The bot ticks hourly and asks the API to check due repos (daily on Paid/Premium/trial, weekly on Free). Message only when the snapshot changes. Do not add the GitHub App or LLM deep research until asked.
+Billing, public-repo audits, and the cheap digest in a pnpm + Turborepo monorepo. Users get a 30-day Paid trial on first `/start`, then monthly Telegram Stars subscriptions (`/tier`, `/upgrade`). They connect **public** GitHub repos with `/connect owner/repo` and run `/audit_secrets`, `/audit_deps`, `/audit_code`, `/audit_contracts`, `/audit_surface`, `/audit` (Break before launch), and `/digest`. The bot ticks hourly and asks the API to check due repos (daily on Paid/Premium/trial, weekly on Free). Message only when the snapshot changes. Do not add the GitHub App or LLM deep research until asked.
 
 ## Billing
 
@@ -26,7 +26,7 @@ Billing, public-repo audits, and the cheap digest in a pnpm + Turborepo monorepo
 
 What we offer on a connected repo is `docs/audit-checklist.md` / `packages/audit-engine/src/catalog.ts`.
 
-MVP live now: `/audit_secrets` (pattern scan), `/audit_deps` (OSV CVEs), `/audit_code` (risky-pattern SAST), `/audit_contracts` (Solidity footguns, if `.sol` files). `/audit` (**Break before launch**) runs all of those and asks the user to fix every P0. `/digest` plus the hourly scheduler run the cheap pass (OSV CVEs + GitHub Actions status). External CLIs (Gitleaks, Semgrep, Slither) and the LLM wrap can replace these later.
+MVP live now: `/audit_secrets` (pattern scan), `/audit_deps` (OSV CVEs), `/audit_code` (risky-pattern SAST), `/audit_contracts` (Solidity footguns, if `.sol` files). `/audit` (**Break before launch**) runs all of those and asks the user to fix every P0. `/digest` plus the hourly scheduler run the cheap pass (OSV CVEs + GitHub Actions status + public site door check). `/audit_surface` is the on-demand version. External CLIs (Gitleaks, Semgrep, Slither) and the LLM wrap can replace these later.
 
 Solana contract audit is a stub in `packages/audit-engine/src/contracts/solana/` (v2). Public repos only until the GitHub App ships.
 

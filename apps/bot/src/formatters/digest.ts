@@ -23,7 +23,7 @@ export function formatDigest(report: DigestReport): string {
   }
 
   if (actionable.length === 0 && report.ci.ok) {
-    lines.push("", "Came back clean. I'll ping you when a CVE shows up or CI goes red.");
+    lines.push("", "Came back clean. I'll ping you when a CVE shows up, CI goes red, or the public site door changes.");
   } else {
     lines.push("", "Want the full pass? /audit");
   }

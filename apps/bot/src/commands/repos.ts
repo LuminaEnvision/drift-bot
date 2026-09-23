@@ -104,7 +104,7 @@ function auditKeyboard(fullName: string, single: boolean) {
   if (!single) {
     return undefined;
   }
-  const kinds = ["secrets", "deps", "code", "contracts", "full"] as const;
+  const kinds = ["secrets", "deps", "code", "contracts", "surface", "full"] as const;
   if (kinds.some((kind) => `audit:${kind}:${fullName}`.length > 64)) {
     return undefined;
   }
@@ -120,5 +120,6 @@ function auditKeyboard(fullName: string, single: boolean) {
     .text("Code", `audit:code:${fullName}`)
     .text("Contracts", `audit:contracts:${fullName}`)
     .row()
+    .text("Surface", `audit:surface:${fullName}`)
     .text("Break before launch", `audit:full:${fullName}`);
 }

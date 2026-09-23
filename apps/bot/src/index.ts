@@ -34,6 +34,7 @@ const COMMANDS = [
   { command: "audit_deps", description: "Known CVEs" },
   { command: "audit_code", description: "Risky code patterns" },
   { command: "audit_contracts", description: "Solidity footguns" },
+  { command: "audit_surface", description: "Public site door check" },
   { command: "audit", description: "Break before launch" },
   { command: "tier", description: "Your plan" },
   { command: "upgrade", description: "Subscribe with Stars" },
