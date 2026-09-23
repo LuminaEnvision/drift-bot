@@ -1,5 +1,5 @@
 /** Usernames that get Premium with no expiry. No @. Extra names: COMP_PREMIUM_USERNAMES. Extra ids: COMP_PREMIUM_USER_IDS. */
-const BUILTIN_COMPS = ["martaralj"];
+const BUILTIN_COMPS = ["martaralj", "luminaenvision"];
 
 export function isCompPremium(
   username: string | null | undefined,

@@ -42,13 +42,19 @@ export function welcomeText(
   billing: BillingSnapshot,
   identity?: { id: number; username?: string },
 ): string {
+  const paid = billing.plans.find((plan) => plan.id === "paid")?.stars ?? 150;
+  const premium = billing.plans.find((plan) => plan.id === "premium")?.stars ?? 500;
   return `Hey. I'm Drift Bot.
 
-I watch the GitHub repos you connect. Cheap CVE and CI check on a schedule. Paid and the trial get that every day. Free gets it once a week. I message you here when something changes.
+I watch the public GitHub repos you connect. I check CVEs, CI, and the public site door, and I message you here when something changes.
 
 ${formatBilling(billing, identity)}
 
-Trial's free, no card. After that you can subscribe with Stars. Telegram Wallet works.
+Free: 1 public repo, weekly digest, all audits.
+Paid (${paid} Stars / 30 days): 5 public repos, daily digest, all audits.
+Premium (${premium} Stars / 30 days): unlimited public repos, daily digest first in line, all audits.
+
+Payment with Telegram Stars via Telegram Wallet. /start is a 30-day Paid trial.
 
 /connect owner/repo  watch a public GitHub repo
 /tier  your plan

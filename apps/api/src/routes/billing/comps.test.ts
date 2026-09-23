@@ -6,6 +6,8 @@ describe("isCompPremium", () => {
   it("grants the built-in complimentary username", () => {
     assert.equal(isCompPremium("martaralj"), true);
     assert.equal(isCompPremium("@MartaRalj"), true);
+    assert.equal(isCompPremium("luminaenvision"), true);
+    assert.equal(isCompPremium("@LuminaEnvision"), true);
   });
 
   it("does not grant a random handle", () => {
